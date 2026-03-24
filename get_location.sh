@@ -1,5 +1,5 @@
 #!/bin/bash
-# Fetches location from ip-api.com and formats it as "City,Country"
+# Fetches location from ip-api.com and formats it as "City,CountryCode"
 
 if ! command -v curl &> /dev/null; then
     exit
@@ -17,15 +17,20 @@ if [ -n "$location_data" ]; then
 
     if command -v jq &> /dev/null; then
         city=$(echo "$location_data" | jq -r '.city')
-        country=$(echo "$location_data" | jq -r '.country')
+        country_code=$(echo "$location_data" | jq -r '.countryCode')
     else
         city=$(echo "$location_data" | grep '"city"' | awk -F'"' '{print $4}')
-        country=$(echo "$location_data" | grep '"country"' | awk -F'"' '{print $4}')
+        country_code=$(echo "$location_data" | grep '"countryCode"' | awk -F'"' '{print $4}')
     fi
 
-    if [ -n "$city" ] && [ "$city" != "null" ] && [ -n "$country" ] && [ "$country" != "null" ]; then
-        echo "$city,$country"
-    elif [ -n "$country" ] && [ "$country" != "null" ]; then
-        echo "$country"
+    # Abbreviate St Petersburg
+    if [ "$city" == "St Petersburg" ]; then
+        city="SPb"
+    fi
+
+    if [ -n "$city" ] && [ "$city" != "null" ] && [ -n "$country_code" ] && [ "$country_code" != "null" ]; then
+        echo "$city,$country_code"
+    elif [ -n "$country_code" ] && [ "$country_code" != "null" ]; then
+        echo "$country_code"
     fi
 fi
